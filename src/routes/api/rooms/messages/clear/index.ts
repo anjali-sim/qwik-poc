@@ -18,15 +18,21 @@ export const onDelete: RequestHandler = async ({ request, json, cookie }) => {
     const contentType = request.headers.get("content-type") || "";
 
     try {
+      const bodyText = await request.text();
+
+      if (!bodyText) {
+        json(400, { error: "Request body is empty" });
+        return;
+      }
+
       if (contentType.includes("application/json")) {
-        data = await request.json();
+        data = JSON.parse(bodyText);
       } else if (contentType.includes("application/x-www-form-urlencoded")) {
-        const text = await request.text();
-        const params = new URLSearchParams(text);
+        const params = new URLSearchParams(bodyText);
         data = { roomId: params.get("roomId") };
-      } else if (contentType.includes("multipart/form-data")) {
-        const formData = await request.formData();
-        data = { roomId: formData.get("roomId") };
+      } else {
+        // Default to JSON parsing
+        data = JSON.parse(bodyText);
       }
     } catch (parseErr) {
       console.error("Error parsing request body:", parseErr);

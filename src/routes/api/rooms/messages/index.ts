@@ -44,21 +44,33 @@ export const onPost: RequestHandler = async ({ request, json, cookie }) => {
     const contentType = request.headers.get("content-type") || "";
 
     try {
+      const bodyText = await request.text();
+
+      if (!bodyText) {
+        json(400, { error: "Request body is empty" });
+        return;
+      }
+
       if (contentType.includes("application/json")) {
-        data = await request.json();
+        data = JSON.parse(bodyText);
       } else if (contentType.includes("application/x-www-form-urlencoded")) {
-        const text = await request.text();
-        const params = new URLSearchParams(text);
+        const params = new URLSearchParams(bodyText);
         data = {
           text: params.get("text"),
           roomId: params.get("roomId"),
         };
       } else if (contentType.includes("multipart/form-data")) {
-        const formData = await request.formData();
+        // For multipart, we need to use FormData
+        const blob = new Blob([bodyText]);
+        const formData = new FormData();
+        formData.append("body", blob);
         data = {
-          text: formData.get("text"),
-          roomId: formData.get("roomId"),
+          text: bodyText.split("text=")[1]?.split("&")[0],
+          roomId: bodyText.split("roomId=")[1]?.split("&")[0],
         };
+      } else {
+        // Default to JSON parsing
+        data = JSON.parse(bodyText);
       }
     } catch (parseErr) {
       console.error("Error parsing request body:", parseErr);
