@@ -21,33 +21,48 @@ export const onGet: RequestHandler = async ({ json }) => {
 };
 
 export const onPost: RequestHandler = async ({ request, json, cookie }) => {
-  await connectDB();
-  const userCookie = cookie.get("chat_user")?.value;
-  const sessionUser = userCookie ? JSON.parse(userCookie) : null;
-  if (!sessionUser) {
-    json(401, { error: "Unauthorized" });
-    return;
+  try {
+    await connectDB();
+    const userCookie = cookie.get("chat_user")?.value;
+    const sessionUser = userCookie ? JSON.parse(userCookie) : null;
+    if (!sessionUser) {
+      json(401, { error: "Unauthorized" });
+      return;
+    }
+
+    let data: any;
+    try {
+      data = await request.json();
+    } catch {
+      json(400, { error: "Invalid JSON body" });
+      return;
+    }
+
+    const { name, description } = data;
+    if (!name?.trim()) {
+      json(400, { error: "Room name required" });
+      return;
+    }
+
+    const room = await Room.create({
+      name: name.trim(),
+      description: description?.trim() || "",
+      createdBy: sessionUser.username,
+      members: [sessionUser.username],
+    });
+
+    json(201, {
+      room: {
+        _id: room._id.toString(),
+        name: room.name,
+        description: room.description,
+        createdBy: room.createdBy,
+        members: room.members,
+        createdAt: room.createdAt?.toISOString(),
+      },
+    });
+  } catch (err: any) {
+    console.error("Error creating room:", err);
+    json(500, { error: "Failed to create room" });
   }
-
-  const { name, description } = await request.json();
-  if (!name?.trim()) {
-    json(400, { error: "Room name required" });
-    return;
-  }
-
-  const room = await Room.create({
-    name: name.trim(),
-    description: description?.trim() || "",
-    createdBy: sessionUser.username,
-    members: [sessionUser.username],
-  });
-
-  json(201, {
-    _id: room._id.toString(),
-    name: room.name,
-    description: room.description,
-    createdBy: room.createdBy,
-    members: room.members,
-    createdAt: room.createdAt?.toISOString(),
-  });
 };

@@ -32,14 +32,27 @@ export const onGet: RequestHandler = ({ params, url, json }) => {
 };
 
 export const onPost: RequestHandler = async ({ params, request, json }) => {
-  const roomId = params.roomId;
-  const { username } = await request.json();
-  if (!username) {
-    json(400, { error: "username required" });
-    return;
+  try {
+    const roomId = params.roomId;
+    let data: any;
+    try {
+      data = await request.json();
+    } catch {
+      json(400, { error: "Invalid JSON body" });
+      return;
+    }
+
+    const { username } = data;
+    if (!username) {
+      json(400, { error: "username required" });
+      return;
+    }
+    const roomTypers = typingStore.get(roomId) ?? new Map<string, number>();
+    roomTypers.set(username, Date.now());
+    typingStore.set(roomId, roomTypers);
+    json(200, { ok: true });
+  } catch (err: any) {
+    console.error("Error updating typing status:", err);
+    json(500, { error: "Failed to update typing status" });
   }
-  const roomTypers = typingStore.get(roomId) ?? new Map<string, number>();
-  roomTypers.set(username, Date.now());
-  typingStore.set(roomId, roomTypers);
-  json(200, { ok: true });
 };

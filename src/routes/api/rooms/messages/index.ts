@@ -31,40 +31,53 @@ export const onGet: RequestHandler = async ({ url, json }) => {
 };
 
 export const onPost: RequestHandler = async ({ request, json, cookie }) => {
-  await connectDB();
-  const userCookie = cookie.get("chat_user")?.value;
-  const sessionUser = userCookie ? JSON.parse(userCookie) : null;
-  if (!sessionUser) {
-    json(401, { error: "Unauthorized" });
-    return;
+  try {
+    await connectDB();
+    const userCookie = cookie.get("chat_user")?.value;
+    const sessionUser = userCookie ? JSON.parse(userCookie) : null;
+    if (!sessionUser) {
+      json(401, { error: "Unauthorized" });
+      return;
+    }
+
+    let data: any;
+    try {
+      data = await request.json();
+    } catch {
+      json(400, { error: "Invalid JSON body" });
+      return;
+    }
+
+    const { text, roomId } = data;
+    if (!text?.trim() || !roomId) {
+      json(400, { error: "text and roomId required" });
+      return;
+    }
+
+    const msg = await Message.create({
+      text: text.trim(),
+      username: sessionUser.username,
+      avatar: sessionUser.avatar || "",
+      roomId,
+    });
+
+    await Room.findByIdAndUpdate(roomId, {
+      $addToSet: { members: sessionUser.username },
+    });
+
+    json(201, {
+      message: {
+        _id: msg._id.toString(),
+        text: msg.text,
+        username: msg.username,
+        avatar: msg.avatar,
+        roomId: msg.roomId,
+        read: msg.read,
+        createdAt: msg.createdAt?.toISOString(),
+      },
+    });
+  } catch (err: any) {
+    console.error("Error sending message:", err);
+    json(500, { error: "Failed to send message" });
   }
-
-  const { text, roomId } = await request.json();
-  if (!text?.trim() || !roomId) {
-    json(400, { error: "text and roomId required" });
-    return;
-  }
-
-  const msg = await Message.create({
-    text: text.trim(),
-    username: sessionUser.username,
-    avatar: sessionUser.avatar || "",
-    roomId,
-  });
-
-  await Room.findByIdAndUpdate(roomId, {
-    $addToSet: { members: sessionUser.username },
-  });
-
-  json(201, {
-    message: {
-      _id: msg._id.toString(),
-      text: msg.text,
-      username: msg.username,
-      avatar: msg.avatar,
-      roomId: msg.roomId,
-      read: msg.read,
-      createdAt: msg.createdAt?.toISOString(),
-    },
-  });
 };
