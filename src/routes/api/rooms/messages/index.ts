@@ -40,10 +40,16 @@ export const onPost: RequestHandler = async ({ json, cookie, parseBody }) => {
       return;
     }
 
-    const data: any = await parseBody();
-
-    if (!data) {
+    const raw = await parseBody();
+    if (!raw) {
       json(400, { error: "Request body is empty" });
+      return;
+    }
+    let data: any;
+    try {
+      data = typeof raw === "string" ? JSON.parse(raw) : raw;
+    } catch {
+      json(400, { error: "Invalid JSON body" });
       return;
     }
 

@@ -34,20 +34,23 @@ export const onGet: RequestHandler = ({ params, url, json }) => {
 export const onPost: RequestHandler = async ({ params, json, parseBody }) => {
   try {
     const roomId = params.roomId;
-
-    const data: any = await parseBody();
-
-    if (!data) {
+    const raw = await parseBody();
+    if (!raw) {
       json(400, { error: "Request body is empty" });
       return;
     }
-
+    let data: any;
+    try {
+      data = typeof raw === "string" ? JSON.parse(raw) : raw;
+    } catch {
+      json(400, { error: "Invalid JSON body" });
+      return;
+    }
     const { username } = data;
     if (!username) {
       json(400, { error: "username required" });
       return;
     }
-
     const roomTypers = typingStore.get(roomId) ?? new Map<string, number>();
     roomTypers.set(username, Date.now());
     typingStore.set(roomId, roomTypers);
