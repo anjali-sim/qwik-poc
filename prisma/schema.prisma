@@ -1,0 +1,47 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("MONGODB_URI")
+}
+
+model User {
+  id        String    @id @default(cuid())
+  username  String    @unique
+  avatar    String?
+  createdAt DateTime  @default(now())
+  rooms     RoomMember[]
+  messages  Message[]
+}
+
+model Room {
+  id        String    @id @default(cuid())
+  name      String
+  createdAt DateTime  @default(now())
+  members   RoomMember[]
+  messages  Message[]
+}
+
+model RoomMember {
+  userId    String
+  roomId    String
+  joinedAt  DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id])
+  room      Room      @relation(fields: [roomId], references: [id])
+  @@id([userId, roomId])
+}
+
+model Message {
+  id        String   @id @default(cuid())
+  text      String
+  createdAt DateTime @default(now())
+  userId    String
+  roomId    String
+  user      User     @relation(fields: [userId], references: [id])
+  room      Room     @relation(fields: [roomId], references: [id])
+}

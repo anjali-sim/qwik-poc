@@ -1,5 +1,7 @@
 # Build
 /dist
+/prisma/dev.db
+/prisma/*.db
 /lib
 /lib-types
 /server
