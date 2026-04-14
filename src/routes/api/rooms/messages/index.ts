@@ -40,11 +40,29 @@ export const onPost: RequestHandler = async ({ request, json, cookie }) => {
       return;
     }
 
-    let data: any;
+    let data: any = {};
+    const contentType = request.headers.get("content-type") || "";
+
     try {
-      data = await request.json();
-    } catch {
-      json(400, { error: "Invalid JSON body" });
+      if (contentType.includes("application/json")) {
+        data = await request.json();
+      } else if (contentType.includes("application/x-www-form-urlencoded")) {
+        const text = await request.text();
+        const params = new URLSearchParams(text);
+        data = {
+          text: params.get("text"),
+          roomId: params.get("roomId"),
+        };
+      } else if (contentType.includes("multipart/form-data")) {
+        const formData = await request.formData();
+        data = {
+          text: formData.get("text"),
+          roomId: formData.get("roomId"),
+        };
+      }
+    } catch (parseErr) {
+      console.error("Error parsing request body:", parseErr);
+      json(400, { error: "Invalid request body" });
       return;
     }
 

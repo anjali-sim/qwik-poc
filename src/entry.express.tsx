@@ -48,9 +48,9 @@ const { router, notFound } = createQwikCity({
 // https://expressjs.com/
 const app = express();
 
-// Parse URL-encoded and JSON form data
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
+// Parse URL-encoded and JSON form data FIRST (before any routes)
+app.use(express.urlencoded({ extended: true, limit: "10mb" }));
+app.use(express.json({ limit: "10mb" }));
 
 // Enable gzip compression
 // app.use(compression());

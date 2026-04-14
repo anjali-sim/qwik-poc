@@ -34,11 +34,23 @@ export const onGet: RequestHandler = ({ params, url, json }) => {
 export const onPost: RequestHandler = async ({ params, request, json }) => {
   try {
     const roomId = params.roomId;
-    let data: any;
+    let data: any = {};
+    const contentType = request.headers.get("content-type") || "";
+
     try {
-      data = await request.json();
-    } catch {
-      json(400, { error: "Invalid JSON body" });
+      if (contentType.includes("application/json")) {
+        data = await request.json();
+      } else if (contentType.includes("application/x-www-form-urlencoded")) {
+        const text = await request.text();
+        const params = new URLSearchParams(text);
+        data = { username: params.get("username") };
+      } else if (contentType.includes("multipart/form-data")) {
+        const formData = await request.formData();
+        data = { username: formData.get("username") };
+      }
+    } catch (parseErr) {
+      console.error("Error parsing request body:", parseErr);
+      json(400, { error: "Invalid request body" });
       return;
     }
 
