@@ -37,7 +37,15 @@ export const onPost: RequestHandler = async ({ json, cookie, parseBody }) => {
     }
     let data: any;
     try {
-      data = typeof raw === "string" ? JSON.parse(raw) : raw;
+      if (typeof raw === "string") {
+        data = JSON.parse(raw);
+      } else if (raw instanceof Uint8Array || Buffer.isBuffer(raw)) {
+        data = JSON.parse(Buffer.from(raw).toString("utf-8"));
+      } else if (typeof raw === "object") {
+        data = raw;
+      } else {
+        data = JSON.parse(String(raw));
+      }
     } catch {
       json(400, { error: "Invalid JSON body" });
       return;
