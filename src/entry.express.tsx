@@ -34,19 +34,23 @@ const PORT = process.env.PORT ?? 3000;
 const { router, notFound } = createQwikCity({
   render,
   qwikCityPlan,
-  // getOrigin(req) {
-  //   // If deploying under a proxy, you may need to build the origin from the request headers
-  //   // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Forwarded-Proto
-  //   const protocol = req.headers["x-forwarded-proto"] ?? "http";
-  //   // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Forwarded-Host
-  //   const host = req.headers["x-forwarded-host"] ?? req.headers.host;
-  //   return `${protocol}://${host}`;
-  // }
+  getOrigin(req) {
+    // If deploying under a proxy, you may need to build the origin from the request headers
+    // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Forwarded-Proto
+    const protocol = req.headers["x-forwarded-proto"] ?? "http";
+    // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Forwarded-Host
+    const host = req.headers["x-forwarded-host"] ?? req.headers.host;
+    return `${protocol}://${host}`;
+  },
 });
 
 // Create the express server
 // https://expressjs.com/
 const app = express();
+
+// Parse URL-encoded and JSON form data
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
 
 // Enable gzip compression
 // app.use(compression());

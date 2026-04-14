@@ -162,7 +162,7 @@ export default component$(() => {
               <input
                 name="username"
                 type="text"
-                placeholder="e.g. anjali_dev"
+                placeholder="e.g. test_dev"
                 class="w-full rounded-lg border border-white/20 bg-white/10 px-4 py-3 text-white placeholder-white/40 outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-400/30"
                 autofocus
               />
