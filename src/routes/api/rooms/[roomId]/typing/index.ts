@@ -31,32 +31,14 @@ export const onGet: RequestHandler = ({ params, url, json }) => {
   json(200, { typing: activeTypers });
 };
 
-export const onPost: RequestHandler = async ({ params, request, json }) => {
+export const onPost: RequestHandler = async ({ params, json, parseBody }) => {
   try {
     const roomId = params.roomId;
-    let data: any = {};
-    const contentType = request.headers.get("content-type") || "";
 
-    try {
-      const bodyText = await request.text();
+    const data: any = await parseBody();
 
-      if (!bodyText) {
-        json(400, { error: "Request body is empty" });
-        return;
-      }
-
-      if (contentType.includes("application/json")) {
-        data = JSON.parse(bodyText);
-      } else if (contentType.includes("application/x-www-form-urlencoded")) {
-        const params = new URLSearchParams(bodyText);
-        data = { username: params.get("username") };
-      } else {
-        // Default to JSON parsing
-        data = JSON.parse(bodyText);
-      }
-    } catch (parseErr) {
-      console.error("Error parsing request body:", parseErr);
-      json(400, { error: "Invalid request body" });
+    if (!data) {
+      json(400, { error: "Request body is empty" });
       return;
     }
 
@@ -65,6 +47,7 @@ export const onPost: RequestHandler = async ({ params, request, json }) => {
       json(400, { error: "username required" });
       return;
     }
+
     const roomTypers = typingStore.get(roomId) ?? new Map<string, number>();
     roomTypers.set(username, Date.now());
     typingStore.set(roomId, roomTypers);

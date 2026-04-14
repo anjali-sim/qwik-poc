@@ -30,7 +30,7 @@ export const onGet: RequestHandler = async ({ url, json }) => {
   );
 };
 
-export const onPost: RequestHandler = async ({ request, json, cookie }) => {
+export const onPost: RequestHandler = async ({ json, cookie, parseBody }) => {
   try {
     await connectDB();
     const userCookie = cookie.get("chat_user")?.value;
@@ -40,41 +40,10 @@ export const onPost: RequestHandler = async ({ request, json, cookie }) => {
       return;
     }
 
-    let data: any = {};
-    const contentType = request.headers.get("content-type") || "";
+    const data: any = await parseBody();
 
-    try {
-      const bodyText = await request.text();
-
-      if (!bodyText) {
-        json(400, { error: "Request body is empty" });
-        return;
-      }
-
-      if (contentType.includes("application/json")) {
-        data = JSON.parse(bodyText);
-      } else if (contentType.includes("application/x-www-form-urlencoded")) {
-        const params = new URLSearchParams(bodyText);
-        data = {
-          text: params.get("text"),
-          roomId: params.get("roomId"),
-        };
-      } else if (contentType.includes("multipart/form-data")) {
-        // For multipart, we need to use FormData
-        const blob = new Blob([bodyText]);
-        const formData = new FormData();
-        formData.append("body", blob);
-        data = {
-          text: bodyText.split("text=")[1]?.split("&")[0],
-          roomId: bodyText.split("roomId=")[1]?.split("&")[0],
-        };
-      } else {
-        // Default to JSON parsing
-        data = JSON.parse(bodyText);
-      }
-    } catch (parseErr) {
-      console.error("Error parsing request body:", parseErr);
-      json(400, { error: "Invalid request body" });
+    if (!data) {
+      json(400, { error: "Request body is empty" });
       return;
     }
 
