@@ -1,18 +1,5 @@
 /**
  * /chat/[roomId] — Individual chat room page
- * Qwik concepts demonstrated:
- *  • routeLoader$ — SSR load of room + message history
- *  • routeAction$ — send a message, delete a message, clear chat
- *  • server$ — mark messages as read server-side
- *  • useSignal / useStore — local reactive state
- *  • useComputed$ — derived values (char count, send enabled, filtered msgs)
- *  • useTask$ — debounce search input
- *  • useVisibleTask$ — SSE / polling for real-time messages + auto-scroll
- *  • useContext — read current user from ChatContext (no prop drilling)
- *  • useResource$ + Resource — live typing indicator (async streaming)
- *  • Error boundary (onGet fallback in routeLoader$)
- *  • Lazy loading — EmojiPicker only loads JS when user clicks
- *  • component$
  */
 import {
   component$,
@@ -40,11 +27,6 @@ import { ChatContext } from "~/lib/context";
 import MessageItem from "~/components/chat/MessageItem";
 import type { Message as MessageType, Room as RoomType } from "~/lib/types";
 import EmojiPicker from "~/components/chat/EmojiPicker";
-
-// ─── EmojiPicker import ────────────────────────────────────────────────────
-// Resumability & lazy loading: In Qwik, every component$ boundary is
-// automatically lazy — EmojiPicker's JS only loads when rendered.
-// import EmojiPicker from "~/components/chat/EmojiPicker";
 
 // ─── routeLoader$ ─────────────────────────────────────────────────────────────
 // Loads chat history & room info before page renders (SSR)
@@ -188,14 +170,13 @@ export const fetchMessages = server$(async function (
 export default component$(() => {
   const data = useRoomData();
   const ctx = useContext(ChatContext);
-  const sendAction = useSendMessage(); // registered — used via fetch optimistically
+  const sendAction = useSendMessage();
   void sendAction;
-  const deleteAction = useDeleteMessage(); // registered for SSR form fallback
+  const deleteAction = useDeleteMessage();
   void deleteAction;
-  const clearAction = useClearChat(); // registered for SSR form fallback
+  const clearAction = useClearChat();
   void clearAction;
 
-  // useStore — reactive object for multiple values
   const store = useStore({
     messages: data.value.messages as MessageType[],
     typingUsers: [] as string[],
@@ -204,7 +185,6 @@ export default component$(() => {
     deletingId: "",
   });
 
-  // useSignal — typed message, search query, loading
   const input = useSignal("");
   const searchQuery = useSignal("");
   const lastMessageTime = useSignal(
@@ -233,7 +213,6 @@ export default component$(() => {
   // useTask$ — reset messages when room changes
   useTask$(({ track }) => {
     track(() => data.value.room?._id);
-    // Reset messages and state when navigating to a different room
     if (data.value.room && data.value.room._id !== currentRoomId.value) {
       currentRoomId.value = data.value.room._id;
       store.messages = data.value.messages;
@@ -250,7 +229,6 @@ export default component$(() => {
     track(() => searchQuery.value);
     // Debounce: only log/process after 300ms pause
     const t = setTimeout(() => {
-      // Could trigger server filter here; for now just reactive
     }, 300);
     cleanup(() => clearTimeout(t));
   });
@@ -282,7 +260,6 @@ export default component$(() => {
             lastMessageTime.value = newMsgs.at(-1)!.createdAt;
             messagesEndRef.value?.scrollIntoView({ behavior: "smooth" });
           } else {
-            // Still advance the cursor so we don't re-fetch same window
             lastMessageTime.value = newMsgs.at(-1)!.createdAt;
           }
         }
@@ -298,7 +275,6 @@ export default component$(() => {
     });
   });
 
-  // useVisibleTask$ — auto scroll on initial load
   // eslint-disable-next-line qwik/no-use-visible-task
   useVisibleTask$(() => {
     messagesEndRef.value?.scrollIntoView({ behavior: "instant" });
@@ -337,8 +313,6 @@ export default component$(() => {
       store.messages = store.messages.map((m) =>
         m._id === tempId ? json.message : m,
       );
-      // Advance cursor to the real createdAt — poller uses $gt so this ID
-      // won't be returned again (it's already in state with the real _id)
       lastMessageTime.value = json.message.createdAt;
     }
   });

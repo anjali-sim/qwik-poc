@@ -178,6 +178,12 @@ export default component$(() => {
           <span class="text-lg">＋</span> New Room
         </Link>
         <Link
+          href="/users"
+          class="room-link flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-gray-400 hover:bg-gray-800 hover:text-white"
+        >
+          <span class="text-lg">👥</span> Users list
+        </Link>
+        <Link
           href="/analytics"
           class="room-link flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-gray-400 hover:bg-gray-800 hover:text-white"
         >

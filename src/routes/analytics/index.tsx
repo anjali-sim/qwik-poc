@@ -1,6 +1,5 @@
 /**
  * /analytics — Analytics dashboard showing chat statistics
- * Qwik concepts: component$, useComputed$, routeLoader$
  */
 import { component$ } from "@builder.io/qwik";
 import { routeLoader$, Link } from "@builder.io/qwik-city";

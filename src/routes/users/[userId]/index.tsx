@@ -1,6 +1,5 @@
 /**
  * /users/[userId] — User detail page (MongoDB)
- * Qwik concepts: routeLoader$, component$, status (error boundary)
  */
 import { component$ } from "@builder.io/qwik";
 import { routeLoader$, type DocumentHead } from "@builder.io/qwik-city";

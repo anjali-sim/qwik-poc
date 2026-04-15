@@ -1,10 +1,5 @@
 /**
  * /chat — Lobby page shown when no room is selected
- * Qwik concepts:
- *  • component$
- *  • useContext (reads ChatContext provided in layout)
- *  • useSignal / useStore
- *  • useNavigate (client-side navigation)
  */
 import { component$, useContext, useSignal, $ } from "@builder.io/qwik";
 import { useNavigate, type DocumentHead } from "@builder.io/qwik-city";
@@ -46,8 +41,6 @@ export default component$(() => {
       if (json.room) {
         // Instantly add room to sidebar context — no page reload needed
         ctx.rooms = [json.room as Room, ...ctx.rooms];
-        // Reset form state BEFORE navigating so signals are clean when
-        // the user returns to /chat (Qwik preserves signal values in layout)
         roomName.value = "";
         roomDesc.value = "";
         nameError.value = "";
@@ -145,4 +138,10 @@ export default component$(() => {
 
 export const head: DocumentHead = {
   title: "QwikChat — Lobby",
+  meta: [
+    {
+      name: "description",
+      content: "Welcome to the QwikChat lobby!",
+    },
+  ],
 };

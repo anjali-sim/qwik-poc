@@ -1,11 +1,5 @@
 /**
  * MessageItem — individual chat bubble
- * Qwik concepts:
- *  • component$
- *  • PropFunction (typed event handler prop)
- *  • useSignal (hover state for delete button)
- *  • useStylesScoped$ — scoped CSS injected only when this component mounts,
- *    styles are automatically removed when component unmounts (no leakage)
  */
 import {
   component$,
@@ -16,8 +10,6 @@ import {
 import type { Message } from "~/lib/types";
 
 // ─── Scoped styles — only apply to THIS component's DOM nodes ────────────────
-// useStylesScoped$ auto-generates a unique class prefix so these rules
-// never clash with other components, even if class names are identical.
 const SCOPED_STYLES = `
   .bubble-enter {
     animation: bubbleIn 0.18s ease-out both;
@@ -55,7 +47,6 @@ interface Props {
 }
 
 export default component$<Props>(({ message, isOwn, onDelete$ }) => {
-  // useStylesScoped$ — inject scoped styles tied to this component instance
   useStylesScoped$(SCOPED_STYLES);
 
   const hovered = useSignal(false);

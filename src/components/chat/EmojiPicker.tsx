@@ -1,6 +1,5 @@
 /**
  * EmojiPicker — lazily loaded component
- * Qwik concept: Resumability & lazy loading
  * This component's JS only downloads when the user clicks the emoji button.
  */
 import { component$, type PropFunction } from "@builder.io/qwik";

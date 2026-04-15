@@ -1,11 +1,5 @@
 /**
  * /chat/layout.tsx — Nested layout (Qwik City)
- * Qwik concepts:
- *  • Nested layouts — sidebar persists while chat area swaps per room
- *  • routeLoader$ — load rooms + current user before page renders (SSR)
- *  • createContextId + useContextProvider — share user/rooms to all children
- *  • server$ — mark user as active server-side
- *  • component$
  */
 import {
   component$,
@@ -65,7 +59,6 @@ export default component$(() => {
   useContextProvider(ChatContext, chatStore);
 
   // useVisibleTask$ — runs only in browser (after hydration)
-  // Here we periodically refresh rooms list for real-time feel
   // eslint-disable-next-line qwik/no-use-visible-task
   useVisibleTask$(({ cleanup }) => {
     const interval = setInterval(async () => {
