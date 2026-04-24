@@ -2,8 +2,16 @@
  * /analytics — Analytics dashboard showing chat statistics
  */
 import { component$ } from "@builder.io/qwik";
-import { routeLoader$, Link } from "@builder.io/qwik-city";
+import { routeLoader$, Link, type RequestHandler } from "@builder.io/qwik-city";
 import { connectDB, Message, Room, User } from "~/lib/db";
+
+export const onGet: RequestHandler = ({ cacheControl }) => {
+  cacheControl({
+    public: true,
+    maxAge: 60, // Response is fresh for 60 seconds
+    staleWhileRevalidate: 300, // Serve stale response for up to 300 seconds while revalidating in background
+  });
+};
 
 // ─── routeLoader$ ─────────────────────────────────────────────────────────────
 export const useAnalyticsData = routeLoader$(async ({ cookie }) => {
@@ -66,6 +74,7 @@ export default component$(() => {
           </div>
           <Link
             href="/chat"
+            prefetch="js"
             class="rounded-lg bg-purple-600 px-4 py-2 text-sm font-medium hover:bg-purple-700"
           >
             ← Back to Chat

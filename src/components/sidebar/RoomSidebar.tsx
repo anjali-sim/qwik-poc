@@ -144,6 +144,7 @@ export default component$(() => {
               <Link
                 key={room._id}
                 href={`/chat/${room._id}`}
+                prefetch="js"
                 class={`room-link flex items-center gap-2 rounded-lg px-3 py-2 text-sm ${
                   isActive
                     ? "active bg-purple-700 text-white"
@@ -173,18 +174,21 @@ export default component$(() => {
       <div class="space-y-2 border-t border-gray-700 px-3 py-3">
         <Link
           href="/chat"
+          prefetch="js"
           class="room-link flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-gray-400 hover:bg-gray-800 hover:text-white"
         >
           <span class="text-lg">＋</span> New Room
         </Link>
         <Link
           href="/users"
+          prefetch="js"
           class="room-link flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-gray-400 hover:bg-gray-800 hover:text-white"
         >
           <span class="text-lg">👥</span> Users list
         </Link>
         <Link
           href="/analytics"
+          prefetch={false}
           class="room-link flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-gray-400 hover:bg-gray-800 hover:text-white"
         >
           <span class="text-lg">📊</span> Analytics

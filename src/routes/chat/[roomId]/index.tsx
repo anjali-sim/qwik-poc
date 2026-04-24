@@ -21,12 +21,20 @@ import {
   z,
   Link,
   type DocumentHead,
+  type RequestHandler,
 } from "@builder.io/qwik-city";
 import { connectDB, Room, Message } from "~/lib/db";
 import { ChatContext } from "~/lib/context";
 import MessageItem from "~/components/chat/MessageItem";
 import type { Message as MessageType, Room as RoomType } from "~/lib/types";
 import EmojiPicker from "~/components/chat/EmojiPicker";
+
+export const onGet: RequestHandler = ({ cacheControl }) => {
+  cacheControl({
+    private: true, // Only the browser may cache, shared caches must not
+    noStore: true, // Do not store response in any cache
+  });
+};
 
 // ─── routeLoader$ ─────────────────────────────────────────────────────────────
 // Loads chat history & room info before page renders (SSR)
@@ -228,8 +236,7 @@ export default component$(() => {
   useTask$(({ track, cleanup }) => {
     track(() => searchQuery.value);
     // Debounce: only log/process after 300ms pause
-    const t = setTimeout(() => {
-    }, 300);
+    const t = setTimeout(() => {}, 300);
     cleanup(() => clearTimeout(t));
   });
 
